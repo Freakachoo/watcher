@@ -21,7 +21,11 @@ const proxySchema = new Schema({
 	country		   : String,
 	inUse		   : { type: Boolean, default: false },
 	issues		   : [issueSchema],
-	availability   : Number
+	// Can be:
+	// 0 - not available - do not check it anymore
+	// 1 - new, need to check
+	// 2 - temporary blocked, check in a 5 minutes
+	availability   : { type: Number, default: 1 }
 })
 
 mongoose.model('Proxy', proxySchema)
