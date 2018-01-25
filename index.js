@@ -61,7 +61,7 @@ const sendRequest = (overrideOptions, agent) => {
 	console.log('uri: ', uri);
 	return new Promise( (resolve, reject) => {
 		request.get({
-			...getConfig().APIOptions, 
+			...getConfig().APIOptions,
 			uri,
 			agent,
 			followRedirect: true,
@@ -86,7 +86,7 @@ const sendRequest = (overrideOptions, agent) => {
 				resolve({body, href: agent.proxy.href})
 			}
 		})
-	}) 
+	})
 }
 
 const getAllPairsInfo = () => sendRequest({path: 'info'})
@@ -128,16 +128,16 @@ const runWatcher = (pairs) => {
 					lastHalfMinuteVolume: Array(Times['HalfMinute']),
 					lastTenSecondsVolume: Array(Times['TenSeconds']),
 				}
-		
+
 			const {lastTickerTime, avgUpdateTime, updatesCounter} = pairsInfo[pt]
-	
+
 			let consoleInfo = ''
 			pairsInfo[pt]['lastTickerTime'] = updated
 			let deviationAlert = false
 			Object.keys(Times).forEach( timesLabel => {
 				pairsInfo[pt][`last${timesLabel}AvgPrice`] = addTrimStack(avg, pairsInfo[pt][`last${timesLabel}AvgPrice`], timesLabel)
 				pairsInfo[pt][`last${timesLabel}Volume`] = addTrimStack(vol, pairsInfo[pt][`last${timesLabel}Volume`], timesLabel)
-	
+
 				// Get only deviation in percentage
 				// consoleInfo += `${timesLabel}: ${arrayAvg(pairsInfo[pt][`last${timesLabel}AvgPrice`])}, ${arrayAvg(pairsInfo[pt][`last${timesLabel}Volume`])} \n`
 				const avgAvgPrice = arrayAvg(pairsInfo[pt][`last${timesLabel}AvgPrice`])
@@ -148,28 +148,28 @@ const runWatcher = (pairs) => {
 				if (Math.abs(avgPriceDeviation) >= Math.abs(deviationPriceFilter) || Math.abs(avgVolumeDeviation) >= Math.abs(deviationVolumeFilter)) deviationAlert = true
 				consoleInfo += `${timesLabel}: price ${avgAvgPrice} ${avgPriceDeviation}%, vol: ${avgVolume} ${avgVolumeDeviation}% \n`
 			})
-	
+
 			if (deviationAlert) {
 				console.log('=========================', pt, i)
 				console.log(consoleInfo)
 			}
 		})
 	}, getConfig().watchTimeout)
-	
+
 }
 
-const testProxies = () => {
-	Promise.all(proxiesList.filter(Boolean).map( p => getTickers([['ltc', 'btc']], new HttpsProxyAgent(p))))
-	.then( res => {
-		console.log('----------------------')
-		console.log(proxiesList)
-	})
-	.catch( error => {
-		console.log('+++++++++++++++++++++++++++')
-		console.log(error)
-	})
-}
-testProxies()
+// const testProxies = () => {
+// 	Promise.all(proxiesList.filter(Boolean).map( p => getTickers([['ltc', 'btc']], new HttpsProxyAgent(p))))
+// 	.then( res => {
+// 		console.log('----------------------')
+// 		console.log(proxiesList)
+// 	})
+// 	.catch( error => {
+// 		console.log('+++++++++++++++++++++++++++')
+// 		console.log(error)
+// 	})
+// }
+// testProxies()
 // getAllPairsInfo()
 // .then( allPairs => {
 // 	const onlyETH = Object.keys(allPairs['pairs']).filter( pl => pl.indexOf('_eth') > 0).map( pl => pl.split('_'))
@@ -200,13 +200,13 @@ testProxies()
 
 /**
  * pairsInfo
- * 
+ *
  * lastTickerTime
  * avgUpdateTime
  * updatesCounter
  * lastTenUpdateTimes
  * lastFiveUpdateTimes
- * 
+ *
  * lastTwentyMinutesAvgPrice
  * lastHalfMinuteAvgPrice
  * lastTenSecondsAvgPrice

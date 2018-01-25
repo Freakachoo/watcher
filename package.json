@@ -13,8 +13,13 @@
     "await-to-js": "^2.0.1",
     "https-proxy-agent": "^2.1.1",
     "lodash": "^4.17.4",
+    "mongoose": "^5.0.1",
     "proxy-lists": "^1.14.1",
     "request": "^2.83.0",
     "tor-request": "^1.0.6"
+  },
+	"scripts": {
+    "proxy": "node ./proxy/proxy_watcher.js",
+    "pump": "node index.js"
   }
 }
