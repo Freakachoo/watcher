@@ -30,6 +30,8 @@ const run_watcher = async () => {
 	gettingProxies.on('error', (err) => console.error('------', err))
 
 	gettingProxies.on('end', () => {
+		// If Scanning proxies is done - run the process again after some timeout
+		setTimeout( () => run_watcher(), config.proxyGetterTimeout)
 		console.log('++++++++ Proxies Done')
 	})
 }

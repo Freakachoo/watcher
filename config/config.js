@@ -30,5 +30,6 @@ modeule.exports = {
 		// countries: ['de', 'us', 'uk', 'ru']
 	},
 
-
+	// Scan for new proxies every half minute
+	proxyGetterTimeout: 1000*30
 }
