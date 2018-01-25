@@ -1,7 +1,7 @@
 const mongoDB = 'watcher'
 const mongoHost = 'localhost'
 
-exports.config = {
+modeule.exports = {
 	mongo: {
 		// The MongoDB server host name
 		host: mongoHost,
