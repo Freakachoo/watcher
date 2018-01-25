@@ -13,13 +13,13 @@ const issueSchema = new Schema({
 const proxySchema = new Schema({
 	id		 	   : ObjectId,
 	lastCheck      : Date,
-	ipAddress	   : { type: 'string', unique: true, required: true },
+	ipAddress	   : { type: String, unique: true, required: true },
 	port		   : Number,
 	anonymityLevel : String,
 	protocols	   : Array,
 	source		   : String,
 	country		   : String,
-	inUse		   : Boolean,
+	inUse		   : { type: Boolean, default: false },
 	issues		   : [issueSchema],
 	availability   : Number
 })

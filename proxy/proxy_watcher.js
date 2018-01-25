@@ -1,3 +1,9 @@
+/**
+ * Script, that is getting list of proxies with using of module
+ * proxy-lists (which have many free proxies providers)
+ * and puts it into mongoDB
+ */
+
 process.on('unhandledRejection', console.error)
 
 const _ = require('lodash')
@@ -11,6 +17,8 @@ const Proxy = mongoose.model('Proxy')
 
 
 const run_watcher = async () => {
+	// Counter of new added proxies
+	let i = 0
 	const mongodb = await mongo()
 
 	const gettingProxies = ProxyLists.getProxies(config.proxyOptions)
@@ -21,6 +29,7 @@ const run_watcher = async () => {
 			const proxyItem = new Proxy(proxy)
 			proxyItem.save((err, res) => {
 				if (err) return console.error('=========== ERROR ON PROXY SAVE', err);
+				i++
 				console.log('-- saved', res.ipAddress)
 			})
 		})
@@ -32,7 +41,7 @@ const run_watcher = async () => {
 	gettingProxies.on('end', () => {
 		// If Scanning proxies is done - run the process again after some timeout
 		setTimeout( () => run_watcher(), config.proxyGetterTimeout)
-		console.log('++++++++ Proxies Done')
+		console.log('++++++++ Adding Proxies Is Done. New proxies added:', i)
 	})
 }
 
