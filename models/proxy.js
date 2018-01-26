@@ -5,9 +5,9 @@ const Schema = mongoose.Schema,
 	ObjectId = Schema.ObjectId
 
 const issueSchema = new Schema({
-	captcha: Boolean,
-	temporary_banned: Boolean,
-	not_available: Boolean
+	captcha: { type: Number, default: 0 },
+	temporary_banned: { type: Number, default: 0 },
+	not_available: { type: Number, default: 0 }
 }, {_id : false})
 
 const proxySchema = new Schema({

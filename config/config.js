@@ -1,7 +1,7 @@
 const mongoDB = 'watcher'
 const mongoHost = 'localhost'
 
-modeule.exports = {
+module.exports = {
 	mongo: {
 		// The MongoDB server host name
 		host: mongoHost,
@@ -31,5 +31,9 @@ modeule.exports = {
 	},
 
 	// Scan for new proxies every half minute
-	proxyGetterTimeout: 1000*30
+	proxyGetterTimeout: 1000*30,
+
+	APIOptions: {
+		uri: 'https://yobit.net/api/3/',
+	}
 }

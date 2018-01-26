@@ -2,6 +2,7 @@ const mongoose = require('mongoose')
 const config = require('../config/config')
 
 require('../models/proxy')
+require('../models/symbol')
 
 module.exports = () =>
 	new Promise( (resolve, reject) => {

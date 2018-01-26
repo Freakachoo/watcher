@@ -1,12 +1,7 @@
 /**
- * Script, that went through mongoDB collection 'proxies',
- * take it, and tries to send GET request to https://yobit.net/api/3/ticker/*
- * (it choosing pair randomly from mongodb collection 'pairs')
- * Take only proxies that have 'inUse' value as false (to avoid too much requests
- * from same IP and avoid temporary blocking),
- *
- * And change proxy item depends on results:
- * 1. Successfully got JSON with ticker data - mark
+ * Script, that is getting list of proxies with using of module
+ * proxy-lists (which have many free proxies providers)
+ * and puts it into mongoDB
  */
 
 process.on('unhandledRejection', console.error)
@@ -14,7 +9,7 @@ process.on('unhandledRejection', console.error)
 const _ = require('lodash')
 const ProxyLists = require('proxy-lists');
 
-const {config} = require('../config/config')
+const config = require('../config/config')
 
 const mongo = require('../initializers/mongo')
 const mongoose = require('mongoose')
@@ -33,20 +28,24 @@ const run_watcher = async () => {
 		data.forEach( proxy => {
 			const proxyItem = new Proxy(proxy)
 			proxyItem.save((err, res) => {
-				if (err) return console.error('=========== ERROR ON PROXY SAVE', err);
+				if (err) return // console.error('=========== ERROR ON PROXY SAVE', err);
 				i++
-				console.log('-- saved', res.ipAddress)
+				// console.log('-- saved', res.ipAddress)
+				process.stdout.write("+")
 			})
 		})
-		console.log('++++++', typeof data)
+		// console.log('++++++', typeof data)
+		process.stdout.write(".")
 	})
 
-	gettingProxies.on('error', (err) => console.error('------', err))
-
+	// gettingProxies.on('error', (err) => console.error('------', err))
+	gettingProxies.on('error', (err) => process.stdout.write("^"))
+	
 	gettingProxies.on('end', () => {
 		// If Scanning proxies is done - run the process again after some timeout
 		setTimeout( () => run_watcher(), config.proxyGetterTimeout)
-		console.log('++++++++ Adding Proxies Is Done. New proxies added:', i)
+		console.log(' | New proxies added:', i)
+		console.log()
 	})
 }
 
