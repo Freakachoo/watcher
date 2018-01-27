@@ -13,6 +13,7 @@ const mongoose = require('mongoose')
 const Symbol = mongoose.model('Symbol')
 
 const ws_heartbeat = require('../lib/ws_heartbeat')
+const {collectStatistics} = require('../lib/watchLogic')
 
 const binanceApi = require('binance')
 const binanceWS = new binanceApi.BinanceWS(true)
@@ -71,13 +72,16 @@ const tickersRunner = () => {
 			.map(s => s.symbol)
 			.filter(s => !pairsTickers.includes(s))
 			.forEach(s => {
-				tickerRunner(s, () => {
-					// console.log('---- WS -----', s)
-				})
+				tickerRunner(s, collectStatistics )
 			})
 	})
 }
 
+
+
+
+
+ /** =============== RUN APP ==================== **/
 mongo()
 // .then( symbolsGetter )
 // .then( () => {
