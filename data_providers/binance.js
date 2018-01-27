@@ -27,16 +27,21 @@ const pairsTickers = []
  * timer interval
  */
 const symbolsGetter = async () => {
-	const [error, symbols] = await to(binanceRest.exchangeInfo())
+	const [error, data] = await to(binanceRest.exchangeInfo())
 	if (error) return console.error(error)
-	console.log('InfoUpdate')
 	// Save all received symbols to DB
 	// If there is an error - just print it for now
-	// TODO: make it somehow with Promises, but don't stop on errors... or stop... don't know... ok maybe stop
-	data.symbols
-	.forEach( s => Symbol.findOneAndUpdate({symbol: s.symbol}, s, {upsert: true}, (err, res) => {
-		if (err) return console.error(err)
-	}))
+	return Promise.all(
+		data.symbols.map( s => {
+			Symbol
+				.findOneAndUpdate({symbol: s.symbol}, s, {upsert: true})
+				.exec()
+				.catch( console.error )
+		})
+	)
+	.then( () => {
+		return console.log('Pairs Updated: ', new Date().toISOString())
+	})
 }
 
 /**
@@ -63,13 +68,13 @@ const tickerRunner = (pair, cb) => {
 const tickersRunner = () => {
 	Symbol.find({}).select({symbol: 1, _id: 0}).exec( (err, symbols) => {
 		symbols
-		.map(s => s.symbol)
-		.filter(s => !pairsTickers.includes(s))
-		.forEach(s => {
-			tickerRunner(s, () => {
-				console.log('---- WS -----', s)
+			.map(s => s.symbol)
+			.filter(s => !pairsTickers.includes(s))
+			.forEach(s => {
+				tickerRunner(s, () => {
+					// console.log('---- WS -----', s)
+				})
 			})
-		})
 	})
 }
 
@@ -82,14 +87,14 @@ mongo()
 // })
 
 
-setInterval( () => {
-	console.log('---- tick ----')
-	tickersRunner()
-}, 3000)
+// setInterval( () => {
+// 	console.log('---- tick ----')
+// 	tickersRunner()
+// }, 3000)
 
 
 // Setup pairs updater
-// setInterval( () => {
-// 	symbolsGetter()
-// tickersRunner()
-// }, 15000)
+setInterval( async () => {
+	await symbolsGetter()
+	tickersRunner()
+}, 5000)
