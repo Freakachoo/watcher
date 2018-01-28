@@ -24,6 +24,18 @@ module.exports = {
 		connection_string: `mongodb://${mongoHost}/${mongoDB}`
 	},
 
+	statistics: {
+		lastPriceMax: 600,
+		lastValueMax: 600,
+		deviationPeriods: [200, 30, 15, 5]
+	},
+
+	// Number of percents when console.log deviations
+	deviationFilter: {
+		price: 0.3,
+		value: 0.3
+	},
+
 	proxyOptions: {
 		protocols: ['http', 'https'],
 		anonymityLevels: ['anonymous', 'elite'],

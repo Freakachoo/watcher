@@ -1,8 +1,14 @@
 process.on('unhandledRejection', console.error)
 
 const program = require('commander')
-const binance = require('./data_providers/binance')
 const mongo = require('./initializers/mongo')
+const mongoose = require('mongoose')
+const Symbol = mongoose.model('Symbol')
+const {to} = require('await-to-js')
+
+const config = require('./config/config')
+const {getPriceDeviations} = require('./lib/watchLogic')
+const binance = require('./data_providers/binance')
 
 program
 	.option('-g, --getter', 'Getter of new pairs')
@@ -19,7 +25,19 @@ mongo()
 .then( () => {
 	if (program.getter) binance.getter()
 	if (program.collector) binance.collector()
-	if (program.analyzer) binance.analyzer()
+	if (program.analyzer) {
+		setInterval( async () => {
+			const [error, symbols] = await to(Symbol.find({}).exec())
+			if (error) throw Error(error)
+			symbols.forEach( s => {
+				const deviations = getPriceDeviations(s)
+	
+				if (Object.values(deviations).some( d => Math.abs(d) >= Math.abs(config.deviationFilter.price)))
+					console.log(s.symbol, 'Deviations:', `${Object.values(deviations).join('% | ')}%`)
+			})
+			process.stdout.write('.')
+		}, 3000)
+	}
 })
 
 // const tor = require('tor-request')
