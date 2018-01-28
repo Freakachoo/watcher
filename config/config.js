@@ -27,7 +27,7 @@ module.exports = {
 	statistics: {
 		lastPriceMax: 600,
 		lastValueMax: 600,
-		deviationPeriods: [200, 30, 15, 5]
+		deviationPeriods: [200, 60, 15]
 	},
 
 	// Number of percents when console.log deviations
