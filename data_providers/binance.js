@@ -33,15 +33,18 @@ const symbolsGetter = async () => {
 	// Save all received symbols to DB
 	// If there is an error - just print it for now
 	return Promise.all(
-		data.symbols.map( s => {
+		data.symbols.map( s =>
 			Symbol
 				.findOneAndUpdate({symbol: s.symbol}, s, {upsert: true})
 				.exec()
 				.catch( console.error )
-		})
+		)
 	)
-	.then( () => {
-		return console.log('Pairs Updated: ', new Date().toISOString())
+	.then( results => {
+		console.log('Pairs Updated: ', new Date().toISOString())
+		const newSymbols = results.filter( r => r === null).length
+		if (newSymbols) console.log('New symbols added:', newSymbols)
+		return
 	})
 }
 
@@ -68,21 +71,40 @@ const tickerRunner = (pair, cb) => {
  */
 const tickersRunner = () => {
 	Symbol.find({}).select({symbol: 1, _id: 0}).exec( (err, symbols) => {
-		symbols
+		if (err) return console.error(err)
+		const filteredSymbols = symbols
 			.map(s => s.symbol)
 			.filter(s => !pairsTickers.includes(s))
-			.forEach(s => {
-				tickerRunner(s, collectStatistics )
-			})
+		filteredSymbols.forEach(s => {
+			tickerRunner(s, collectStatistics )
+		})
+		process.stdout.write(filteredSymbols.length ? `-${filteredSymbols.length}-` : '.')
 	})
 }
 
 
-
+module.exports = {
+	getter: () => {
+		console.log('Symbols getter run.')
+		symbolsGetter()
+		setInterval( () => {
+			symbolsGetter()
+		// Run symbols updater once in 20 minutes i think would be enough
+		}, 1000*60*20)
+	},
+	collector: () => {
+		console.log('Data collector run.')
+		tickersRunner()
+		setInterval( () => {
+			tickersRunner()
+		// If case there might be disconnected tickers i setup it to check every 10 seconds
+		}, 1000*10)
+	},
+}
 
 
  /** =============== RUN APP ==================== **/
-mongo()
+// mongo()
 // .then( symbolsGetter )
 // .then( () => {
 // 	tickerRunner('LTCBTC', () => {
@@ -98,7 +120,7 @@ mongo()
 
 
 // Setup pairs updater
-setInterval( async () => {
-	await symbolsGetter()
-	tickersRunner()
-}, 5000)
+// setInterval( async () => {
+// 	await symbolsGetter()
+// 	tickersRunner()
+// }, 5000)

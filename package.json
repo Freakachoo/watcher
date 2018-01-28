@@ -6,6 +6,9 @@
   "scripts": {
     "proxyWatcher": "node ./proxy/proxyWatcher.js",
     "proxyChecker": "node ./proxy/proxyChecker.js",
+    "getter": "node index -g",
+    "collector": "node index -c",
+    "analyzer": "node index -a",
     "pump": "node index.js"
   },
   "author": "",
@@ -14,6 +17,7 @@
     "0s": "^1.0.0",
     "await-to-js": "^2.0.1",
     "binance": "^1.3.1",
+    "commander": "^2.13.0",
     "http-proxy-agent": "^2.0.0",
     "https-proxy-agent": "^2.1.1",
     "lodash": "^4.17.4",
