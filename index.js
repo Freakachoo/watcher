@@ -29,12 +29,13 @@ mongo()
 		setInterval( async () => {
 			const [error, symbols] = await to(Symbol.find({}).exec())
 			if (error) throw Error(error)
-			console.log()
 			symbols.forEach( s => {
 				const deviations = getPriceDeviations(s)
-	
-				if (Object.values(deviations).some( d => Math.abs(d) >= Math.abs(config.deviationFilter.price)))
+
+				if (Object.values(deviations).some( d => Math.abs(d) >= Math.abs(config.deviationFilter.price))) {
+					console.log()
 					console.log(s.symbol, 'Deviations:', `${Object.values(deviations).join('% | ')}%`)
+				}
 			})
 			process.stdout.write('.')
 		}, 3000)

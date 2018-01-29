@@ -32,7 +32,7 @@ module.exports = {
 
 	// Number of percents when console.log deviations
 	deviationFilter: {
-		price: 0.3,
+		price: 1,
 		value: 0.3
 	},
 
