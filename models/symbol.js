@@ -5,8 +5,8 @@ const Schema = mongoose.Schema,
 	ObjectId = Schema.ObjectId
 
 const statisticsSchema = new Schema({
-	lastAvgPrice			: [[Number]],
-	lastQuoteAssetVolume	: [[Number]],
+	lastAvgPrice			: [Number],
+	lastQuoteAssetVolume	: [Number],
 }, {_id: false})
 
 const symbolSchema = new Schema({
