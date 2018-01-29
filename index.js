@@ -29,6 +29,7 @@ mongo()
 		setInterval( async () => {
 			const [error, symbols] = await to(Symbol.find({}).exec())
 			if (error) throw Error(error)
+			console.log()
 			symbols.forEach( s => {
 				const deviations = getPriceDeviations(s)
 	
