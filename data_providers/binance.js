@@ -13,7 +13,8 @@ const mongoose = require('mongoose')
 const Symbol = mongoose.model('Symbol')
 
 const ws_heartbeat = require('../lib/ws_heartbeat')
-const {collectStatistics} = require('../lib/watchLogic')
+const {collectTickers, collectBars} = require('../lib/watchLogic')
+const {validateInterval, intervalToMs} = require('../lib/helperFunctions')
 
 const binanceApi = require('binance')
 const binanceWS = new binanceApi.BinanceWS(true)
@@ -48,6 +49,32 @@ const symbolsGetter = async () => {
 	})
 }
 
+const barCollector = async (symbol, interval) => {
+	validateInterval(interval)
+	
+	const historyBars = await Symbol.find({symbol}).select({[`historyBars.${interval}`]: {'$slice':-1}, _id: 0}).exec()
+	const lastCloseTime = historyBars[0].historyBars[0][interval][0]['closeTime']
+	// If last update was less than ~interval ago - no need to update it
+	if (Date.now() - lastCloseTime < intervalToMs(interval)+10) {
+		console.log('No need to update symbol')
+		return
+	}
+	// console.log('historyBars: ', Date.now() - historyBars[0].historyBars[0][interval][0]['openTime']);
+	console.log('Update symbol')
+	const [error, data] = await to(binanceRest.klines({
+		symbol,
+		interval,
+		limit: 50
+	}))
+	if (error) return console.error(error)
+	const result = await Symbol.update({symbol}, {[`historyBars.${interval}`]: data}).exec()
+	return
+}
+
+const barsCollector = () => {
+	barCollector('MDABTC', '15m')
+}
+
 /**
  * Run WebSocket ticker watcher
  * 
@@ -76,7 +103,7 @@ const tickersRunner = () => {
 			.map(s => s.symbol)
 			.filter(s => !pairsTickers.includes(s))
 		filteredSymbols.forEach(s => {
-			tickerRunner(s, collectStatistics )
+			tickerRunner(s, collectTickers )
 		})
 		process.stdout.write(filteredSymbols.length ? `-${filteredSymbols.length}-` : '.')
 	})
@@ -100,6 +127,7 @@ module.exports = {
 		// If case there might be disconnected tickers i setup it to check every 10 seconds
 		}, 1000*10)
 	},
+	barsCollector
 }
 
 

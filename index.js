@@ -7,16 +7,17 @@ const Symbol = mongoose.model('Symbol')
 const {to} = require('await-to-js')
 
 const config = require('./config/config')
-const {getPriceDeviations} = require('./lib/watchLogic')
+const {getPriceDeviations, getQuoteAssetVolumeDeviations, getBaseAssetVolumeDeviations} = require('./lib/watchLogic')
 const binance = require('./data_providers/binance')
 
 program
 	.option('-g, --getter', 'Getter of new pairs')
 	.option('-c, --collector', 'Collector of pairs info')
 	.option('-a, --analyzer', 'Data analyzer')
+	.option('-b, --bars', 'Bars collector')
 	.parse(process.argv)
 
-if (!program.getter && !program.collector && !program.analyzer) {
+if (!program.getter && !program.collector && !program.analyzer && !program.bars) {
 	console.log('Please choose at least one option. For help run with flag -h.')
 	process.exit(0)
 }
@@ -25,16 +26,22 @@ mongo()
 .then( () => {
 	if (program.getter) binance.getter()
 	if (program.collector) binance.collector()
+	if (program.bars) binance.barsCollector()
 	if (program.analyzer) {
 		setInterval( async () => {
 			const [error, symbols] = await to(Symbol.find({}).exec())
 			if (error) throw Error(error)
 			symbols.forEach( s => {
-				const deviations = getPriceDeviations(s)
-
-				if (Object.values(deviations).some( d => Math.abs(d) >= Math.abs(config.deviationFilter.price))) {
+				const priceDeviations = getPriceDeviations(s)
+				const volumeDeviations = getQuoteAssetVolumeDeviations(s)
+			
+				if (Object.values(priceDeviations).some( d => Math.abs(d) >= Math.abs(config.deviationFilter.price))) {
 					console.log()
-					console.log(s.symbol, 'Deviations:', `${Object.values(deviations).join('% | ')}%`)
+					console.log(s.symbol, '--P-- Deviations:', `${Object.values(priceDeviations).join('% | ')}%`)
+				}
+				if (Object.values(volumeDeviations).some( d => Math.abs(d) >= Math.abs(config.deviationFilter.value))) {
+					console.log()
+					console.log(s.symbol, '--V-- Deviations:', `${Object.values(volumeDeviations).join('% | ')}%`)
 				}
 			})
 			process.stdout.write('.')
