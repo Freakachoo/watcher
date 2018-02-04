@@ -21,6 +21,8 @@
     "http-proxy-agent": "^2.0.0",
     "https-proxy-agent": "^2.1.1",
     "lodash": "^4.17.4",
+    "moment": "^2.20.1",
+    "momentjs": "^2.0.0",
     "mongoose": "^5.0.1",
     "proxy-lists": "^1.14.1",
     "request": "^2.83.0",

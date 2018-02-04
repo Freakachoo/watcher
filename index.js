@@ -7,7 +7,8 @@ const Symbol = mongoose.model('Symbol')
 const {to} = require('await-to-js')
 
 const config = require('./config/config')
-const {getPriceDeviations, getQuoteAssetVolumeDeviations, getBaseAssetVolumeDeviations} = require('./lib/watchLogic')
+const {arrayAvg, calcDeviation} = require('./lib/helperFunctions')
+const {getPriceDeviations, getQuoteAssetVolumeDeviations, getBaseAssetVolumeDeviations, analyzeBars} = require('./lib/watchLogic')
 const binance = require('./data_providers/binance')
 
 program
@@ -23,10 +24,20 @@ if (!program.getter && !program.collector && !program.analyzer && !program.bars)
 }
 
 mongo()
-.then( () => {
+.then( async () => {
 	if (program.getter) binance.getter()
 	if (program.collector) binance.collector()
-	if (program.bars) binance.barsCollector()
+	if (program.bars) {
+		const goBars = async () => {
+			await binance.barsCollector()
+			const symbols = await Symbol.find({})
+			symbols.forEach( analyzeBars )
+			console.log('-------------------------------')
+		}
+		goBars()
+		// For now just check every minute
+		setInterval(() => goBars(), 60*1000)
+	}
 	if (program.analyzer) {
 		setInterval( async () => {
 			const [error, symbols] = await to(Symbol.find({}).exec())

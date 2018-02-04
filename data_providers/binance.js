@@ -51,28 +51,31 @@ const symbolsGetter = async () => {
 
 const barCollector = async (symbol, interval) => {
 	validateInterval(interval)
-	
+
 	const historyBars = await Symbol.find({symbol}).select({[`historyBars.${interval}`]: {'$slice':-1}, _id: 0}).exec()
-	const lastCloseTime = historyBars[0].historyBars[0][interval][0]['closeTime']
-	// If last update was less than ~interval ago - no need to update it
+	const lastCloseTime = historyBars[0].historyBars[0] && historyBars[0].historyBars[0][interval] && historyBars[0].historyBars[0][interval][0] ? historyBars[0].historyBars[0][interval][0]['closeTime'] : 0
+	// // If last update was less than ~interval ago - no need to update it
 	if (Date.now() - lastCloseTime < intervalToMs(interval)+10) {
-		console.log('No need to update symbol')
-		return
+		// console.log('No need to update symbol', symbol)
+		return false
 	}
-	// console.log('historyBars: ', Date.now() - historyBars[0].historyBars[0][interval][0]['openTime']);
-	console.log('Update symbol')
+
+	// console.log('Update symbol', symbol)
 	const [error, data] = await to(binanceRest.klines({
 		symbol,
 		interval,
 		limit: 50
 	}))
 	if (error) return console.error(error)
-	const result = await Symbol.update({symbol}, {[`historyBars.${interval}`]: data}).exec()
-	return
+	if (data.length)
+		await Symbol.update({symbol}, {[`historyBars.${interval}`]: data}).exec()
+	return true
 }
 
-const barsCollector = () => {
-	barCollector('MDABTC', '15m')
+const barsCollector = async () => {
+	const symbols = await Symbol.find({})
+	return await Promise.all(symbols.map(s => barCollector(s.symbol, '15m')))
+		.then( updated => updated.filter(Boolean).length ? console.log('Pairs updated', updated.filter(Boolean).length) : console.log('No pairs updated'))
 }
 
 /**

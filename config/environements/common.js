@@ -36,11 +36,6 @@ module.exports = {
 		value: 20
 	},
 
-	deviationFilterBars: {
-		price: 3,
-		volume: 100
-	},
-
 	possibleIntervals: ['1m', '5m', '15m', '30m', '1h', '2h', '4h', '6h', '12h', '1D', '1W'],
 
 	proxyOptions: {
