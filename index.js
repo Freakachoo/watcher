@@ -28,13 +28,15 @@ mongo()
 	if (program.getter) binance.getter()
 	if (program.collector) binance.collector()
 	if (program.bars) {
-		const goBars = async () => {
-			await binance.barsCollector()
-			const symbols = await Symbol.find({})
-			symbols.forEach( analyzeBars )
-			console.log('-------------------------------')
+		const goBars = async (firstRun = false) => {
+			const pairsUpdated = await binance.barsCollector()
+			if (firstRun || pairsUpdated) {
+				const symbols = await Symbol.find({})
+				console.log('-------------------------------')
+				symbols.forEach( analyzeBars )
+			}
 		}
-		goBars()
+		goBars(true)
 		// For now just check every minute
 		setInterval(() => goBars(), 60*1000)
 	}

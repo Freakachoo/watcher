@@ -53,9 +53,9 @@ const barCollector = async (symbol, interval) => {
 	validateInterval(interval)
 
 	const historyBars = await Symbol.find({symbol}).select({[`historyBars.${interval}`]: {'$slice':-1}, _id: 0}).exec()
-	const lastCloseTime = historyBars[0].historyBars[0] && historyBars[0].historyBars[0][interval] && historyBars[0].historyBars[0][interval][0] ? historyBars[0].historyBars[0][interval][0]['closeTime'] : 0
+	const lastOpenTime = historyBars[0].historyBars[0] && historyBars[0].historyBars[0][interval] && historyBars[0].historyBars[0][interval][0] ? historyBars[0].historyBars[0][interval][0]['openTime'] : 0
 	// // If last update was less than ~interval ago - no need to update it
-	if (Date.now() - lastCloseTime < intervalToMs(interval)+10) {
+	if (Date.now() - lastOpenTime < intervalToMs(interval)+10) {
 		// console.log('No need to update symbol', symbol)
 		return false
 	}
@@ -75,7 +75,10 @@ const barCollector = async (symbol, interval) => {
 const barsCollector = async () => {
 	const symbols = await Symbol.find({})
 	return await Promise.all(symbols.map(s => barCollector(s.symbol, '15m')))
-		.then( updated => updated.filter(Boolean).length ? console.log('Pairs updated', updated.filter(Boolean).length) : console.log('No pairs updated'))
+		.then( updated => {
+			updated.filter(Boolean).length ? console.log('Pairs updated', updated.filter(Boolean).length) : console.log('No pairs updated')
+			return updated.filter(Boolean).length
+		})
 }
 
 /**
